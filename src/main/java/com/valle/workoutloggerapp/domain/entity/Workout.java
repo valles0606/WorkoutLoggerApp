@@ -24,12 +24,6 @@ public class Workout {
     @Column(name = "workout_date", nullable = false)
     private LocalDate workoutDate;
 
-    @Column(name = "start_time", nullable = false)
-    private Timestamp startTime;
-
-    @Column(name = "end_time")
-    private Timestamp endTime;
-
     @Column(name = "summary", length = 1000)
     private String workoutSummary;
 
