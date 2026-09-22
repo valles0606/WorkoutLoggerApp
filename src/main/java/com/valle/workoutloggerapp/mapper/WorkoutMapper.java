@@ -6,5 +6,6 @@ import com.valle.workoutloggerapp.domain.dtos.WorkoutDto;
 import com.valle.workoutloggerapp.domain.entity.Workout;
 
 public interface WorkoutMapper {
-    CreateWorkoutRequest fromDto(CreateWorkoutRequestDto workoutDto);
+    public CreateWorkoutRequest fromDto(CreateWorkoutRequestDto workoutDto);
+    public WorkoutDto toDto(Workout workout);
 }
