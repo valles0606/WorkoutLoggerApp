@@ -1,7 +1,9 @@
 package com.valle.workoutloggerapp.mapper.impl;
 
 import com.valle.workoutloggerapp.domain.CreateWorkoutRequest;
+import com.valle.workoutloggerapp.domain.UpdateWorkoutRequest;
 import com.valle.workoutloggerapp.domain.dtos.CreateWorkoutRequestDto;
+import com.valle.workoutloggerapp.domain.dtos.UpdateWorkoutRequestDto;
 import com.valle.workoutloggerapp.domain.dtos.WorkoutDto;
 import com.valle.workoutloggerapp.domain.entity.Workout;
 import com.valle.workoutloggerapp.mapper.WorkoutMapper;
@@ -25,6 +27,15 @@ public class WorkoutMapperImpl implements WorkoutMapper {
                 workout.getTitle(),
                 workout.getWorkoutDate(),
                 workout.getWorkoutSummary()
+        );
+    }
+
+    @Override
+    public UpdateWorkoutRequest fromDto(UpdateWorkoutRequestDto updateWorkoutRequestDto) {
+        return new UpdateWorkoutRequest(
+                updateWorkoutRequestDto.title(),
+                updateWorkoutRequestDto.workoutDate(),
+                updateWorkoutRequestDto.workoutSummary()
         );
     }
 }

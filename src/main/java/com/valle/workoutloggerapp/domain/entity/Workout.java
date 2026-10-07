@@ -1,8 +1,8 @@
 package com.valle.workoutloggerapp.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
@@ -10,8 +10,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "workouts")
+@Builder
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Workout {
 
     @Id

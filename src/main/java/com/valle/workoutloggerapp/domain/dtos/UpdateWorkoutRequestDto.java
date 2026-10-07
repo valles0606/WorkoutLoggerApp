@@ -1,12 +1,13 @@
 package com.valle.workoutloggerapp.domain.dtos;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
-import java.sql.Timestamp;
+
 import java.time.LocalDate;
 
-public record CreateWorkoutRequestDto(
-        @NotBlank (message = ERROR_MESSAGE_TITLE_NULL)
+public record UpdateWorkoutRequestDto(
+        @NotBlank(message = ERROR_MESSAGE_TITLE_NULL)
         @Length(max = 100, message = ERROR_MESSAGE_TITLE_LENGTH)
         String title,
         @NotNull(message = ERROR_MESSAGE_WORKOUT_DATE_NULL)
