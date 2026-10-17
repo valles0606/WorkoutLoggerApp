@@ -11,5 +11,5 @@ import jakarta.validation.Valid;
 public interface WorkoutMapper {
     public CreateWorkoutRequest fromDto(CreateWorkoutRequestDto workoutDto);
     public WorkoutDto toDto(Workout workout);
-    UpdateWorkoutRequest fromDto(UpdateWorkoutRequestDto updateWorkoutRequestDto);
+    public UpdateWorkoutRequest fromDto(UpdateWorkoutRequestDto updateWorkoutRequestDto);
 }
