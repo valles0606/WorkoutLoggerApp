@@ -9,7 +9,7 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Table(name = "ExerciseSets")
+@Table(name = "exercise_sets")
 @Getter
 @Setter
 public class ExerciseSet {

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -48,5 +49,10 @@ public class WorkoutServiceImpl implements WorkoutService {
         workout.setWorkoutSummary(updateWorkoutRequest.workoutSummary());
 
         return workoutRepository.save(workout);
+    }
+
+    @Override
+    public Optional<Workout> getWorkoutById(UUID workoutId) {
+        return workoutRepository.findById(workoutId);
     }
 }

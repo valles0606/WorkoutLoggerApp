@@ -4,9 +4,11 @@ package com.valle.workoutloggerapp.controller;
 import com.valle.workoutloggerapp.domain.CreateWorkoutRequest;
 import com.valle.workoutloggerapp.domain.UpdateWorkoutRequest;
 import com.valle.workoutloggerapp.domain.dtos.CreateWorkoutRequestDto;
+import com.valle.workoutloggerapp.domain.dtos.FullWorkoutDto;
 import com.valle.workoutloggerapp.domain.dtos.UpdateWorkoutRequestDto;
 import com.valle.workoutloggerapp.domain.dtos.WorkoutDto;
 import com.valle.workoutloggerapp.domain.entity.Workout;
+import com.valle.workoutloggerapp.exception.WorkoutNotFoundException;
 import com.valle.workoutloggerapp.mapper.WorkoutMapper;
 import com.valle.workoutloggerapp.service.WorkoutService;
 import jakarta.validation.Valid;
@@ -15,16 +17,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/workouts")
-public class WorkoutLogController {
+public class WorkoutController {
 
     private final WorkoutService workoutService;
     private final WorkoutMapper workoutMapper;
 
-    public WorkoutLogController(WorkoutService workoutService, WorkoutMapper workoutMapper) {
+    public WorkoutController(WorkoutService workoutService, WorkoutMapper workoutMapper) {
         this.workoutService = workoutService;
         this.workoutMapper = workoutMapper;
     }
@@ -42,6 +45,13 @@ public class WorkoutLogController {
         List<Workout> workouts = workoutService.listWorkouts();
         List<WorkoutDto> workoutDtos = workouts.stream().map(workoutMapper::toDto).toList();
         return ResponseEntity.ok(workoutDtos);
+    }
+
+    @GetMapping(path = "/{workoutId}")
+    public ResponseEntity<FullWorkoutDto> getWorkout(@PathVariable UUID workoutId) {
+        Optional<Workout> workout = workoutService.getWorkoutById(workoutId);
+        FullWorkoutDto fullWorkoutDto = workoutMapper.toFullDto(workout.orElseThrow(() -> new WorkoutNotFoundException(workoutId)));
+        return ResponseEntity.ok(fullWorkoutDto);
     }
 
     @PutMapping(path = "/{workoutId}")
