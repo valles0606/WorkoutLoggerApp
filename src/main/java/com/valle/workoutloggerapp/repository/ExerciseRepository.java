@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface ExerciseRepository extends JpaRepository<Exercise, UUID> {
     Optional<Exercise> findByWorkoutIdAndId(UUID workoutId, UUID exerciseId);
+    void deleteByWorkoutIdAndId(UUID workoutId, UUID exerciseId);
 }
