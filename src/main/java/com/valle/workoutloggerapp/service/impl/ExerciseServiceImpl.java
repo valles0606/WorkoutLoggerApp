@@ -50,4 +50,9 @@ public class ExerciseServiceImpl implements ExerciseService {
         return exerciseRepository.findByWorkoutIdAndId(workoutId, exerciseId)
                 .orElseThrow(() -> new ExerciseNotFoundException(workoutId, exerciseId));
     }
+
+    @Override
+    public void deleteExercise(UUID workoutId, UUID exerciseId) {
+        exerciseRepository.deleteByWorkoutIdAndId(workoutId, exerciseId);
+    }
 }
