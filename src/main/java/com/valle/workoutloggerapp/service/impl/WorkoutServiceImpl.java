@@ -52,7 +52,7 @@ public class WorkoutServiceImpl implements WorkoutService {
     }
 
     @Override
-    public Optional<Workout> getWorkoutById(UUID workoutId) {
-        return workoutRepository.findById(workoutId);
+    public Workout getWorkoutById(UUID workoutId) {
+        return workoutRepository.findById(workoutId).orElseThrow(() -> new WorkoutNotFoundException(workoutId));
     }
 }

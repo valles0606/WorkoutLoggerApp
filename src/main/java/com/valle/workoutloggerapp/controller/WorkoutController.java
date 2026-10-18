@@ -49,8 +49,8 @@ public class WorkoutController {
 
     @GetMapping(path = "/{workoutId}")
     public ResponseEntity<FullWorkoutDto> getWorkout(@PathVariable UUID workoutId) {
-        Optional<Workout> workout = workoutService.getWorkoutById(workoutId);
-        FullWorkoutDto fullWorkoutDto = workoutMapper.toFullDto(workout.orElseThrow(() -> new WorkoutNotFoundException(workoutId)));
+        Workout workout = workoutService.getWorkoutById(workoutId);
+        FullWorkoutDto fullWorkoutDto = workoutMapper.toFullDto(workout);
         return ResponseEntity.ok(fullWorkoutDto);
     }
 

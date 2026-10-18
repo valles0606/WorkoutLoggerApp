@@ -13,5 +13,5 @@ public interface WorkoutService {
     public void deleteWorkout(UUID workoutId);
     public List<Workout> listWorkouts();
     public Workout updateWorkout(UUID workoutId, UpdateWorkoutRequest updateWorkoutRequest);
-    public Optional<Workout> getWorkoutById(UUID workoutId);
+    public Workout getWorkoutById(UUID workoutId);
 }
