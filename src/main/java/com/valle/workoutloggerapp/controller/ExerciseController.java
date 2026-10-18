@@ -51,4 +51,9 @@ public class ExerciseController {
         return ResponseEntity.ok(exerciseDto);
     }
 
+    @DeleteMapping(path = "/{exerciseId}")
+    public ResponseEntity<Void> deleteExercise(@PathVariable UUID workoutId, @PathVariable UUID exerciseId) {
+        exerciseService.deleteExercise(workoutId, exerciseId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
