@@ -1,9 +1,13 @@
 package com.valle.workoutloggerapp.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +22,10 @@ public class Exercise {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ExerciseName exerciseName;
+
+    @CreationTimestamp
+    @Column(nullable = false, unique = true)
+    private Instant createdAt;
 
     //cascadeType.all makes it so deleting an exercise will also delete all sets with it!
     //Orphan removal makes it so removing a set from our kist wil also delete it from our database, not just unlink it

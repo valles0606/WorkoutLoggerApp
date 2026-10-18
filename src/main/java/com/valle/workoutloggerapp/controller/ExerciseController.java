@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,6 +34,13 @@ public class ExerciseController {
         Exercise exercise = exerciseService.createExercise(workoutId, createExerciseRequest);
         ExerciseDto exerciseDto = exerciseMapper.toDto(exercise);
         return new  ResponseEntity<>(exerciseDto, HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ExerciseDto>> getAllExercises(@PathVariable UUID workoutId) {
+        List<Exercise> exercises = exerciseService.listExercises(workoutId);
+        List<ExerciseDto> exerciseDtos = exercises.stream().map(exerciseMapper::toDto).toList();
+        return ResponseEntity.ok(exerciseDtos);
     }
 
 }
