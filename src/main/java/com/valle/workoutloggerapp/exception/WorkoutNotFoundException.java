@@ -6,8 +6,8 @@ public class WorkoutNotFoundException extends RuntimeException {
     private final UUID workoutId;
 
     public WorkoutNotFoundException(UUID workoutId) {
-        super("Workout with id " + workoutId + " not found");
         this.workoutId = workoutId;
+        super("Workout with id " + workoutId + " not found");
     }
 
     public UUID getWorkoutId() {

@@ -3,11 +3,11 @@ package com.valle.workoutloggerapp.service.impl;
 import com.valle.workoutloggerapp.domain.CreateExerciseRequest;
 import com.valle.workoutloggerapp.domain.entity.Exercise;
 import com.valle.workoutloggerapp.domain.entity.Workout;
+import com.valle.workoutloggerapp.exception.ExerciseNotFoundException;
 import com.valle.workoutloggerapp.exception.WorkoutNotFoundException;
 import com.valle.workoutloggerapp.repository.ExerciseRepository;
 import com.valle.workoutloggerapp.repository.WorkoutRepository;
 import com.valle.workoutloggerapp.service.ExerciseService;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,5 +43,11 @@ public class ExerciseServiceImpl implements ExerciseService {
         Workout workout = workoutRepository.findById(workoutId)
                 .orElseThrow(() -> new WorkoutNotFoundException(workoutId));
         return workout.getExercises();
+    }
+
+    @Override
+    public Exercise getExerciseById(UUID workoutId, UUID exerciseId) {
+        return exerciseRepository.findByWorkoutIdAndId(workoutId, exerciseId)
+                .orElseThrow(() -> new ExerciseNotFoundException(workoutId, exerciseId));
     }
 }

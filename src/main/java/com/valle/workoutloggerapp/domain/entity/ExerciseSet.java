@@ -18,6 +18,10 @@ public class ExerciseSet {
     private UUID id;
 
     @Column(nullable = false)
+    @Min(1)
+    private Integer setNumber;
+
+    @Column(nullable = false)
     @Min(0)
     private Integer weight;
 
@@ -29,9 +33,6 @@ public class ExerciseSet {
     @Min(1)
     @Max(10)
     private Integer rpe;
-
-    @Column(nullable = false)
-    private Boolean failure;
 
     @ManyToOne
     @JoinColumn(name = "exercise_id", nullable = false)

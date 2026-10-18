@@ -10,4 +10,5 @@ public interface ExerciseService {
 
     public Exercise createExercise(UUID workoutId, CreateExerciseRequest createExerciseRequest);
     public List<Exercise> listExercises(UUID workoutId);
+    public Exercise getExerciseById(UUID workoutId, UUID exerciseId);
 }

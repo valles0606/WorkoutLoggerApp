@@ -3,6 +3,7 @@ package com.valle.workoutloggerapp.controller;
 import com.valle.workoutloggerapp.domain.CreateExerciseRequest;
 import com.valle.workoutloggerapp.domain.dtos.CreateExerciseRequestDto;
 import com.valle.workoutloggerapp.domain.dtos.ExerciseDto;
+import com.valle.workoutloggerapp.domain.dtos.FullExerciseDto;
 import com.valle.workoutloggerapp.domain.entity.Exercise;
 import com.valle.workoutloggerapp.mapper.ExerciseMapper;
 import com.valle.workoutloggerapp.service.ExerciseService;
@@ -41,6 +42,13 @@ public class ExerciseController {
         List<Exercise> exercises = exerciseService.listExercises(workoutId);
         List<ExerciseDto> exerciseDtos = exercises.stream().map(exerciseMapper::toDto).toList();
         return ResponseEntity.ok(exerciseDtos);
+    }
+
+    @GetMapping(path = "/{exerciseId}")
+    public ResponseEntity<FullExerciseDto> getExerciseById(@PathVariable UUID workoutId, @PathVariable UUID exerciseId) {
+        Exercise exercise = exerciseService.getExerciseById(workoutId, exerciseId);
+        FullExerciseDto exerciseDto = exerciseMapper.toFullDto(exercise);
+        return ResponseEntity.ok(exerciseDto);
     }
 
 }
