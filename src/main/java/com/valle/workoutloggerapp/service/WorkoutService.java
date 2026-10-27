@@ -9,9 +9,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface WorkoutService {
-    public Workout createWorkout(CreateWorkoutRequest createWorkoutRequest);
-    public void deleteWorkout(UUID workoutId);
-    public List<Workout> listWorkouts();
-    public Workout updateWorkout(UUID workoutId, UpdateWorkoutRequest updateWorkoutRequest);
-    public Workout getWorkoutById(UUID workoutId);
+    Workout createWorkout(CreateWorkoutRequest createWorkoutRequest);
+    void deleteWorkout(UUID workoutId);
+    List<Workout> listWorkouts();
+    Workout updateWorkout(UUID workoutId, UpdateWorkoutRequest updateWorkoutRequest);
+    Workout getWorkoutById(UUID workoutId);
 }

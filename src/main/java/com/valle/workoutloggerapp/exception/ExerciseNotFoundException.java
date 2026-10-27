@@ -9,4 +9,8 @@ public class ExerciseNotFoundException extends RuntimeException {
         this.exerciseId = exerciseId;
         super("Exercise with ID " + exerciseId + " not found in Workout with ID " + workoutId);
     }
+
+    public UUID getExerciseId() {
+        return exerciseId;
+    }
 }

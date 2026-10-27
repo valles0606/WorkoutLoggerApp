@@ -41,14 +41,14 @@ public class WorkoutController {
     }
 
     @GetMapping
-    public ResponseEntity<List<WorkoutDto>> listWorkouts() {
+    public ResponseEntity<List<WorkoutDto>> getAllWorkouts() {
         List<Workout> workouts = workoutService.listWorkouts();
         List<WorkoutDto> workoutDtos = workouts.stream().map(workoutMapper::toDto).toList();
         return ResponseEntity.ok(workoutDtos);
     }
 
     @GetMapping(path = "/{workoutId}")
-    public ResponseEntity<FullWorkoutDto> getWorkout(@PathVariable UUID workoutId) {
+    public ResponseEntity<FullWorkoutDto> getWorkoutById(@PathVariable UUID workoutId) {
         Workout workout = workoutService.getWorkoutById(workoutId);
         FullWorkoutDto fullWorkoutDto = workoutMapper.toFullDto(workout);
         return ResponseEntity.ok(fullWorkoutDto);

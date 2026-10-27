@@ -1,6 +1,7 @@
 package com.valle.workoutloggerapp.service.impl;
 
 import com.valle.workoutloggerapp.domain.CreateExerciseRequest;
+import com.valle.workoutloggerapp.domain.UpdateExerciseRequest;
 import com.valle.workoutloggerapp.domain.entity.Exercise;
 import com.valle.workoutloggerapp.domain.entity.Workout;
 import com.valle.workoutloggerapp.exception.ExerciseNotFoundException;
@@ -54,5 +55,15 @@ public class ExerciseServiceImpl implements ExerciseService {
     @Override
     public void deleteExercise(UUID workoutId, UUID exerciseId) {
         exerciseRepository.deleteByWorkoutIdAndId(workoutId, exerciseId);
+    }
+
+    @Override
+    public Exercise updateExercise(UUID workoutId, UUID exerciseId, UpdateExerciseRequest updateExerciseRequest) {
+        Exercise exercise = exerciseRepository.findByWorkoutIdAndId(workoutId, exerciseId)
+                .orElseThrow(() -> new ExerciseNotFoundException(workoutId, exerciseId));
+
+        exercise.setExerciseName(updateExerciseRequest.exerciseName());
+
+        return exerciseRepository.save(exercise);
     }
 }

@@ -1,9 +1,11 @@
 package com.valle.workoutloggerapp.controller;
 
 import com.valle.workoutloggerapp.domain.CreateExerciseRequest;
+import com.valle.workoutloggerapp.domain.UpdateExerciseRequest;
 import com.valle.workoutloggerapp.domain.dtos.CreateExerciseRequestDto;
 import com.valle.workoutloggerapp.domain.dtos.ExerciseDto;
 import com.valle.workoutloggerapp.domain.dtos.FullExerciseDto;
+import com.valle.workoutloggerapp.domain.dtos.UpdateExerciseRequestDto;
 import com.valle.workoutloggerapp.domain.entity.Exercise;
 import com.valle.workoutloggerapp.mapper.ExerciseMapper;
 import com.valle.workoutloggerapp.service.ExerciseService;
@@ -48,6 +50,16 @@ public class ExerciseController {
     public ResponseEntity<FullExerciseDto> getExerciseById(@PathVariable UUID workoutId, @PathVariable UUID exerciseId) {
         Exercise exercise = exerciseService.getExerciseById(workoutId, exerciseId);
         FullExerciseDto exerciseDto = exerciseMapper.toFullDto(exercise);
+        return ResponseEntity.ok(exerciseDto);
+    }
+
+    @PutMapping(path = "/{exerciseId}")
+    public ResponseEntity<ExerciseDto> updateExercise(
+            @PathVariable UUID workoutId, @PathVariable UUID exerciseId,
+            @Valid @RequestBody UpdateExerciseRequestDto updateExerciseRequestDto) {
+        UpdateExerciseRequest updateExerciseRequest = exerciseMapper.fromDto(updateExerciseRequestDto);
+        Exercise exercise = exerciseService.updateExercise(workoutId, exerciseId, updateExerciseRequest);
+        ExerciseDto exerciseDto = exerciseMapper.toDto(exercise);
         return ResponseEntity.ok(exerciseDto);
     }
 

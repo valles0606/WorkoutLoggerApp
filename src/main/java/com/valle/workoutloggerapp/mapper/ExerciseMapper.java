@@ -10,8 +10,8 @@ import com.valle.workoutloggerapp.domain.dtos.UpdateExerciseRequestDto;
 import com.valle.workoutloggerapp.domain.entity.Exercise;
 
 public interface ExerciseMapper {
-    public CreateExerciseRequest fromDto(CreateExerciseRequestDto createExerciseRequestDto);
-    public ExerciseDto toDto(Exercise exercise);
-    public UpdateExerciseRequest fromDto(UpdateExerciseRequestDto updateExerciseRequestDto);
-    public FullExerciseDto toFullDto(Exercise exercise);
+    CreateExerciseRequest fromDto(CreateExerciseRequestDto createExerciseRequestDto);
+    ExerciseDto toDto(Exercise exercise);
+    UpdateExerciseRequest fromDto(UpdateExerciseRequestDto updateExerciseRequestDto);
+    FullExerciseDto toFullDto(Exercise exercise);
 }

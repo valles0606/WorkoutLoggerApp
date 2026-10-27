@@ -10,8 +10,8 @@ import com.valle.workoutloggerapp.domain.entity.Workout;
 import jakarta.validation.Valid;
 
 public interface WorkoutMapper {
-    public CreateWorkoutRequest fromDto(CreateWorkoutRequestDto workoutDto);
-    public WorkoutDto toDto(Workout workout);
-    public UpdateWorkoutRequest fromDto(UpdateWorkoutRequestDto updateWorkoutRequestDto);
-    public FullWorkoutDto toFullDto(Workout workout);
+    CreateWorkoutRequest fromDto(CreateWorkoutRequestDto workoutDto);
+    WorkoutDto toDto(Workout workout);
+    UpdateWorkoutRequest fromDto(UpdateWorkoutRequestDto updateWorkoutRequestDto);
+    FullWorkoutDto toFullDto(Workout workout);
 }
