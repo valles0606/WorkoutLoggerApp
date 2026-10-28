@@ -94,8 +94,6 @@ All endpoints below access sets within the specified workout and exercise.
 | `DELETE` | `/api/v1/workouts/{workoutId}/exercises/{exerciseId}/sets/{exerciseSetId}` | Delete a set | 204 No Content |
 
 # Roadmap + Future Plans 💭 #
-- Complete exercise set management.
-- Containerize the Spring Boot application.
-- Add automated service and controller tests.
+- Add automated service, controller, and repository layer tests.
 - Build a web or mobile frontend.
 - Add workout history and progress summaries.
