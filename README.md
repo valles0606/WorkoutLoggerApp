@@ -99,4 +99,3 @@ All endpoints below access sets within the specified workout and exercise.
 - Add automated service and controller tests.
 - Build a web or mobile frontend.
 - Add workout history and progress summaries.
-- 
