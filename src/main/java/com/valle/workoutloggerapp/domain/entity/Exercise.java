@@ -1,10 +1,7 @@
 package com.valle.workoutloggerapp.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
@@ -13,8 +10,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "exercises")
+@Builder
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Exercise {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

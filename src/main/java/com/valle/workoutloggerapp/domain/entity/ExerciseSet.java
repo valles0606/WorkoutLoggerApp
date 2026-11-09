@@ -3,10 +3,7 @@ package com.valle.workoutloggerapp.domain.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -18,8 +15,10 @@ import java.util.UUID;
                 columnNames = {"exercise_id", "set_number"}
         )
 )
+@Builder
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
 public class ExerciseSet {
 

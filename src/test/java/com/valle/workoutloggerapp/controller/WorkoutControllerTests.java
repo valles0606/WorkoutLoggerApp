@@ -1,5 +1,4 @@
 package com.valle.workoutloggerapp.controller;
 
-
-public class WorkoutControllerTest {
+public class WorkoutControllerTests {
 }
