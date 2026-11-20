@@ -151,5 +151,4 @@ public class WorkoutRepositoryTests {
         assertTrue(workoutRepository.findById(deleted.getId()).isEmpty());
         assertTrue(workoutRepository.findById(retained.getId()).isPresent());
     }
-
 }

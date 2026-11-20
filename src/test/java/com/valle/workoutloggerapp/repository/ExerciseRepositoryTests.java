@@ -207,5 +207,4 @@ public class ExerciseRepositoryTests {
 
         assertTrue(exerciseRepository.findById(saved.getId()).isPresent());
     }
-
 }
