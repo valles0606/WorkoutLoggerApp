@@ -1,9 +1,12 @@
 package com.valle.workoutloggerapp.service;
 
 import com.valle.workoutloggerapp.domain.CreateExerciseRequest;
+import com.valle.workoutloggerapp.domain.UpdateExerciseRequest;
 import com.valle.workoutloggerapp.domain.entity.Exercise;
 import com.valle.workoutloggerapp.domain.entity.ExerciseName;
 import com.valle.workoutloggerapp.domain.entity.Workout;
+import com.valle.workoutloggerapp.exception.ExerciseNotFoundException;
+import com.valle.workoutloggerapp.exception.WorkoutNotFoundException;
 import com.valle.workoutloggerapp.repository.ExerciseRepository;
 import com.valle.workoutloggerapp.repository.WorkoutRepository;
 import com.valle.workoutloggerapp.service.impl.ExerciseServiceImpl;
@@ -14,13 +17,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +42,7 @@ public class ExerciseServiceTests {
     private WorkoutRepository workoutRepository;
 
     @Test
-    public void exerciseService_createExercise_returnsExercise() {
+    public void ExerciseService_createExercise_returnsExercise() {
         CreateExerciseRequest createExerciseRequest = new CreateExerciseRequest (
                 ExerciseName.BARBELL_BENCH_PRESS
         );
@@ -62,4 +70,163 @@ public class ExerciseServiceTests {
         assertSame(repositoryResult, result);
     }
 
+    @Test
+    public void ExerciseService_listExercises_returnsListOfExercises() {
+        UUID workoutId = UUID.randomUUID();
+        Workout workout = Workout.builder().id(workoutId).build();
+
+        Exercise exercise1 = Exercise.builder()
+                .id(UUID.randomUUID())
+                .exerciseName(ExerciseName.BARBELL_BENCH_PRESS)
+                .workout(workout)
+                .build();
+
+        Exercise exercise2 = Exercise.builder()
+                .id(UUID.randomUUID())
+                .exerciseName(ExerciseName.ARNOLD_PRESS)
+                .workout(workout)
+                .build();
+
+        Exercise exercise3 = Exercise.builder()
+                .id(UUID.randomUUID())
+                .exerciseName(ExerciseName.BARBELL_DEADLIFT)
+                .workout(workout)
+                .build();
+
+        List<Exercise> exercises = List.of(exercise1, exercise2, exercise3);
+        workout.setExercises(exercises);
+
+        when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
+
+        List<Exercise> result = exerciseService.listExercises(workoutId);
+
+        assertEquals(exercises, result);
+        verify(workoutRepository).findById(workoutId);
+    }
+
+    @Test
+    public void ExerciseService_createExercise_throwsWorkoutNotFoundException() {
+        UUID workoutId = UUID.randomUUID();
+        CreateExerciseRequest request = new CreateExerciseRequest(ExerciseName.BARBELL_BENCH_PRESS);
+        when(workoutRepository.findById(workoutId)).thenReturn(Optional.empty());
+
+        WorkoutNotFoundException exception = assertThrows(WorkoutNotFoundException.class,
+                () -> exerciseService.createExercise(workoutId, request));
+
+        assertEquals(workoutId, exception.getWorkoutId());
+        verifyNoInteractions(exerciseRepository);
+    }
+
+    @Test
+    public void ExerciseService_listExercises_returnsEmptyList() {
+        UUID workoutId = UUID.randomUUID();
+        Workout workout = Workout.builder().id(workoutId).build();
+        when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
+
+        List<Exercise> result = exerciseService.listExercises(workoutId);
+
+        assertTrue(result.isEmpty());
+        verify(workoutRepository).findById(workoutId);
+    }
+
+    @Test
+    public void ExerciseService_listExercises_throwsWorkoutNotFoundException() {
+        UUID workoutId = UUID.randomUUID();
+        when(workoutRepository.findById(workoutId)).thenReturn(Optional.empty());
+
+        WorkoutNotFoundException exception = assertThrows(WorkoutNotFoundException.class,
+                () -> exerciseService.listExercises(workoutId));
+
+        assertEquals(workoutId, exception.getWorkoutId());
+        verifyNoInteractions(exerciseRepository);
+    }
+
+    @Test
+    public void ExerciseService_getExerciseById_returnsExercise() {
+        UUID workoutId = UUID.randomUUID();
+        UUID exerciseId = UUID.randomUUID();
+        Workout workout = Workout.builder().id(workoutId).build();
+        Exercise exercise = Exercise.builder()
+                .id(exerciseId)
+                .exerciseName(ExerciseName.ARNOLD_PRESS)
+                .workout(workout)
+                .build();
+        when(exerciseRepository.findByWorkoutIdAndId(workoutId, exerciseId))
+                .thenReturn(Optional.of(exercise));
+
+        Exercise result = exerciseService.getExerciseById(workoutId, exerciseId);
+
+        assertSame(exercise, result);
+        verify(exerciseRepository).findByWorkoutIdAndId(workoutId, exerciseId);
+    }
+
+    @Test
+    public void ExerciseService_getExerciseById_throwsExerciseNotFoundException() {
+        UUID workoutId = UUID.randomUUID();
+        UUID exerciseId = UUID.randomUUID();
+        when(exerciseRepository.findByWorkoutIdAndId(workoutId, exerciseId))
+                .thenReturn(Optional.empty());
+
+        ExerciseNotFoundException exception = assertThrows(ExerciseNotFoundException.class,
+                () -> exerciseService.getExerciseById(workoutId, exerciseId));
+
+        assertEquals(exerciseId, exception.getExerciseId());
+        verify(exerciseRepository).findByWorkoutIdAndId(workoutId, exerciseId);
+    }
+
+    @Test
+    public void ExerciseService_updateExercise_returnsUpdatedExercise() {
+        UUID workoutId = UUID.randomUUID();
+        UUID exerciseId = UUID.randomUUID();
+        Workout workout = Workout.builder().id(workoutId).build();
+        Exercise existingExercise = Exercise.builder()
+                .id(exerciseId)
+                .exerciseName(ExerciseName.ARNOLD_PRESS)
+                .workout(workout)
+                .build();
+        UpdateExerciseRequest request = new UpdateExerciseRequest(ExerciseName.BARBELL_BENCH_PRESS);
+        Exercise repositoryResult = Exercise.builder()
+                .id(exerciseId)
+                .exerciseName(request.exerciseName())
+                .workout(workout)
+                .build();
+        when(exerciseRepository.findByWorkoutIdAndId(workoutId, exerciseId))
+                .thenReturn(Optional.of(existingExercise));
+        when(exerciseRepository.save(existingExercise)).thenReturn(repositoryResult);
+
+        Exercise result = exerciseService.updateExercise(workoutId, exerciseId, request);
+
+        ArgumentCaptor<Exercise> captor = ArgumentCaptor.forClass(Exercise.class);
+        verify(exerciseRepository).save(captor.capture());
+        assertSame(existingExercise, captor.getValue());
+        assertEquals(request.exerciseName(), captor.getValue().getExerciseName());
+        assertEquals(exerciseId, captor.getValue().getId());
+        assertSame(workout, captor.getValue().getWorkout());
+        assertSame(repositoryResult, result);
+    }
+
+    @Test
+    public void ExerciseService_updateExercise_throwsExerciseNotFoundException() {
+        UUID workoutId = UUID.randomUUID();
+        UUID exerciseId = UUID.randomUUID();
+        UpdateExerciseRequest request = new UpdateExerciseRequest(ExerciseName.BARBELL_BENCH_PRESS);
+        when(exerciseRepository.findByWorkoutIdAndId(workoutId, exerciseId))
+                .thenReturn(Optional.empty());
+
+        ExerciseNotFoundException exception = assertThrows(ExerciseNotFoundException.class,
+                () -> exerciseService.updateExercise(workoutId, exerciseId, request));
+
+        assertEquals(exerciseId, exception.getExerciseId());
+        verify(exerciseRepository, never()).save(any(Exercise.class));
+    }
+
+    @Test
+    public void ExerciseService_deleteExercise_returnsVoid() {
+        UUID workoutId = UUID.randomUUID();
+        UUID exerciseId = UUID.randomUUID();
+
+        exerciseService.deleteExercise(workoutId, exerciseId);
+
+        verify(exerciseRepository).deleteByWorkoutIdAndId(workoutId, exerciseId);
+    }
 }
