@@ -117,11 +117,6 @@ public class WorkoutServiceTests {
         assertEquals("test1 description", savedWorkout.getWorkoutSummary());
     }
 
-    /**
-     * Checks that updating finds the existing workout, changes its fields,
-     * saves it, and returns the saved entity with the same ID.
-     * AI helped with test
-     */
     @Test
     public void workoutService_updateWorkoutById_returnsWorkout() {
         UUID workoutId = UUID.randomUUID();
@@ -158,7 +153,11 @@ public class WorkoutServiceTests {
 
     @Test
     public void workoutService_deleteWorkoutById_returnsEmpty() {
+        UUID id  = UUID.randomUUID();
 
+        workoutService.deleteWorkout(id);
+
+        verify(workoutRepository).deleteById(id);
     }
 
 }
