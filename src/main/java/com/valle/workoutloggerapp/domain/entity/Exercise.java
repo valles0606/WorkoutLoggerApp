@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,13 +26,15 @@ public class Exercise {
     private ExerciseName exerciseName;
 
     @CreationTimestamp
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
     //cascadeType.all makes it so deleting an exercise will also delete all sets with it!
     //Orphan removal makes it so removing a set from our kist wil also delete it from our database, not just unlink it
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ExerciseSet> exerciseSets;
+    @OrderBy("setNumber ASC")
+    @Builder.Default
+    private List<ExerciseSet> exerciseSets = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "workout_id", nullable = false)

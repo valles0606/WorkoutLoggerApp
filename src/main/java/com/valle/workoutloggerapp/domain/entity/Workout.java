@@ -3,8 +3,8 @@ package com.valle.workoutloggerapp.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,5 +31,6 @@ public class Workout {
     private String workoutSummary;
 
     @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Exercise> exercises;
+    @Builder.Default
+    private List<Exercise> exercises = new ArrayList<>();
 }
