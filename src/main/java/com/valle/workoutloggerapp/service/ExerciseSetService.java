@@ -9,12 +9,8 @@ import java.util.UUID;
 
 public interface ExerciseSetService {
     ExerciseSet createExerciseSet(UUID workoutId, UUID exerciseId, CreateExerciseSetRequest createExerciseSetRequest);
-
     List<ExerciseSet> listExerciseSets(UUID workoutId, UUID exerciseId);
-
     ExerciseSet getExerciseSetById(UUID workoutId, UUID exerciseId, UUID exerciseSetId);
-
     void deleteExerciseSetById(UUID workoutId, UUID exerciseId, UUID exerciseSetId);
-
     ExerciseSet updateExerciseSet(UUID workoutId, UUID exerciseId, UUID exerciseSetId, UpdateExerciseSetRequest updateExerciseSetRequest);
 }

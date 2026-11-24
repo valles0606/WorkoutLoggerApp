@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface WorkoutService {
     Workout createWorkout(CreateWorkoutRequest createWorkoutRequest);
     void deleteWorkout(UUID workoutId);
-    List<Workout> listWorkouts();
+    List<Workout> listWorkouts(Integer page, Integer size);
     Workout updateWorkout(UUID workoutId, UpdateWorkoutRequest updateWorkoutRequest);
     Workout getWorkoutById(UUID workoutId);
 }

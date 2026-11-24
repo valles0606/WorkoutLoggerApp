@@ -5,15 +5,14 @@ import com.valle.workoutloggerapp.domain.UpdateWorkoutRequest;
 import com.valle.workoutloggerapp.domain.entity.Workout;
 import com.valle.workoutloggerapp.repository.WorkoutRepository;
 import com.valle.workoutloggerapp.service.impl.WorkoutServiceImpl;
-import org.h2.mvstore.Page;
-import org.hibernate.jdbc.Work;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
@@ -75,16 +74,17 @@ public class WorkoutServiceTests {
                 .build();
 
         List<Workout> workouts = List.of(newer, older);
-        Sort expectedSort = Sort.by(Sort.Direction.DESC, "workoutDate");
+        PageRequest pageable = PageRequest.of(2, 2,
+                Sort.by("workoutDate").descending().and(Sort.by("id").descending()));
 
-        when(workoutRepository.findAll(expectedSort))
-                .thenReturn(workouts);
+        when(workoutRepository.findAll(pageable))
+                .thenReturn(new PageImpl<>(workouts, pageable, 6));
 
-        List<Workout> savedWorkouts = workoutService.listWorkouts();
+        List<Workout> savedWorkouts = workoutService.listWorkouts(2, 2);
 
         assertEquals(workouts, savedWorkouts);
 
-        verify(workoutRepository).findAll(expectedSort);
+        verify(workoutRepository).findAll(pageable);
     }
 
     @Test

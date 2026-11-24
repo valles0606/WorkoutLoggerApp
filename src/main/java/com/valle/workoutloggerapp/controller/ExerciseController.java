@@ -10,6 +10,8 @@ import com.valle.workoutloggerapp.domain.entity.Exercise;
 import com.valle.workoutloggerapp.mapper.ExerciseMapper;
 import com.valle.workoutloggerapp.service.ExerciseService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,8 +42,12 @@ public class ExerciseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ExerciseDto>> getAllExercises(@PathVariable UUID workoutId) {
-        List<Exercise> exercises = exerciseService.listExercises(workoutId);
+    public ResponseEntity<List<ExerciseDto>> getAllExercises(
+            @PathVariable UUID workoutId,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int size
+    ) {
+        List<Exercise> exercises = exerciseService.listExercises(workoutId, page, size);
         List<ExerciseDto> exerciseDtos = exercises.stream().map(exerciseMapper::toDto).toList();
         return ResponseEntity.ok(exerciseDtos);
     }

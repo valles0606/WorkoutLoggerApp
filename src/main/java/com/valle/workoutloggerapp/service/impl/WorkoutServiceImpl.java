@@ -6,6 +6,9 @@ import com.valle.workoutloggerapp.domain.entity.Workout;
 import com.valle.workoutloggerapp.exception.WorkoutNotFoundException;
 import com.valle.workoutloggerapp.repository.WorkoutRepository;
 import com.valle.workoutloggerapp.service.WorkoutService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -37,8 +40,11 @@ public class WorkoutServiceImpl implements WorkoutService {
     }
 
     @Override
-    public List<Workout> listWorkouts() {
-        return workoutRepository.findAll(Sort.by(Sort.Direction.DESC, "workoutDate"));
+    public List<Workout> listWorkouts(Integer page, Integer size) {
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by("workoutDate").descending().and(Sort.by("id").descending()));
+        Page<Workout> workouts = workoutRepository.findAll(pageable);
+        return workouts.getContent();
     }
 
     @Override

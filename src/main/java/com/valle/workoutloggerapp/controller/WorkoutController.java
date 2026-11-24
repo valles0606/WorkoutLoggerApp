@@ -12,6 +12,8 @@ import com.valle.workoutloggerapp.exception.WorkoutNotFoundException;
 import com.valle.workoutloggerapp.mapper.WorkoutMapper;
 import com.valle.workoutloggerapp.service.WorkoutService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,8 +43,11 @@ public class WorkoutController {
     }
 
     @GetMapping
-    public ResponseEntity<List<WorkoutDto>> getAllWorkouts() {
-        List<Workout> workouts = workoutService.listWorkouts();
+    public ResponseEntity<List<WorkoutDto>> getAllWorkouts(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int size
+    ) {
+        List<Workout> workouts = workoutService.listWorkouts(page, size);
         List<WorkoutDto> workoutDtos = workouts.stream().map(workoutMapper::toDto).toList();
         return ResponseEntity.ok(workoutDtos);
     }

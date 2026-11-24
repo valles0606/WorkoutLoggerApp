@@ -16,6 +16,10 @@ import org.mockito.InjectMocks;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
@@ -94,14 +98,18 @@ public class ExerciseServiceTests {
                 .build();
 
         List<Exercise> exercises = List.of(exercise1, exercise2, exercise3);
-        workout.setExercises(exercises);
+        PageRequest pageable = PageRequest.of(1, 3,
+                Sort.by("createdAt").descending().and(Sort.by("id").descending()));
 
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
+        when(exerciseRepository.findByWorkoutIdOrderByCreatedAtDesc(workoutId, pageable))
+                .thenReturn(new PageImpl<>(exercises, pageable, 6));
 
-        List<Exercise> result = exerciseService.listExercises(workoutId);
+        List<Exercise> result = exerciseService.listExercises(workoutId, 1, 3);
 
         assertEquals(exercises, result);
         verify(workoutRepository).findById(workoutId);
+        verify(exerciseRepository).findByWorkoutIdOrderByCreatedAtDesc(workoutId, pageable);
     }
 
     @Test
@@ -121,12 +129,17 @@ public class ExerciseServiceTests {
     public void ExerciseService_listExercises_returnsEmptyList() {
         UUID workoutId = UUID.randomUUID();
         Workout workout = Workout.builder().id(workoutId).build();
+        PageRequest pageable = PageRequest.of(0, 10,
+                Sort.by("createdAt").descending().and(Sort.by("id").descending()));
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
+        when(exerciseRepository.findByWorkoutIdOrderByCreatedAtDesc(workoutId, pageable))
+                .thenReturn(Page.empty(pageable));
 
-        List<Exercise> result = exerciseService.listExercises(workoutId);
+        List<Exercise> result = exerciseService.listExercises(workoutId, 0, 10);
 
         assertTrue(result.isEmpty());
         verify(workoutRepository).findById(workoutId);
+        verify(exerciseRepository).findByWorkoutIdOrderByCreatedAtDesc(workoutId, pageable);
     }
 
     @Test
@@ -135,7 +148,7 @@ public class ExerciseServiceTests {
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.empty());
 
         WorkoutNotFoundException exception = assertThrows(WorkoutNotFoundException.class,
-                () -> exerciseService.listExercises(workoutId));
+                () -> exerciseService.listExercises(workoutId, 0, 10));
 
         assertEquals(workoutId, exception.getWorkoutId());
         verifyNoInteractions(exerciseRepository);
