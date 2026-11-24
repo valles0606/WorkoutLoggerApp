@@ -42,7 +42,7 @@ public class WorkoutServiceImpl implements WorkoutService {
     @Override
     public List<Workout> listWorkouts(Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page, size,
-                Sort.by("workoutDate").descending().and(Sort.by("id").descending()));
+                Sort.by("workoutDate").descending().and(Sort.by("createdAt").descending()));
         Page<Workout> workouts = workoutRepository.findAll(pageable);
         return workouts.getContent();
     }
