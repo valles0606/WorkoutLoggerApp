@@ -32,13 +32,7 @@ public class ExerciseSetServiceImpl implements ExerciseSetService {
         Exercise exercise = exerciseRepository.findWithLockByWorkoutIdAndId(workoutId, exerciseId)
                 .orElseThrow(() -> new ExerciseNotFoundException(workoutId, exerciseId));
 
-        int setNum = exerciseSetRepository
-                .findTopByExercise_IdOrderBySetNumberDesc(exercise.getId())
-                .map(existingSet -> existingSet.getSetNumber() + 1)
-                .orElse(1);
-
         ExerciseSet exerciseSet = new ExerciseSet(
-                setNum,
                 createExerciseSetRequest.weight(),
                 createExerciseSetRequest.reps(),
                 createExerciseSetRequest.rpe(),
@@ -50,7 +44,7 @@ public class ExerciseSetServiceImpl implements ExerciseSetService {
 
     @Override
     public List<ExerciseSet> listExerciseSets(UUID workoutId, UUID exerciseId) {
-        return exerciseSetRepository.findByExercise_Workout_IdAndExercise_IdOrderBySetNumberAsc(workoutId, exerciseId);
+        return exerciseSetRepository.findByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc(workoutId, exerciseId);
     }
 
     @Override

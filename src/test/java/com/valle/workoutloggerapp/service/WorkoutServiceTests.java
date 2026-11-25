@@ -75,7 +75,7 @@ public class WorkoutServiceTests {
 
         List<Workout> workouts = List.of(newer, older);
         PageRequest pageable = PageRequest.of(2, 2,
-                Sort.by("workoutDate").descending().and(Sort.by("id").descending()));
+                Sort.by("workoutDate").descending().and(Sort.by("createdAt").descending()));
 
         when(workoutRepository.findAll(pageable))
                 .thenReturn(new PageImpl<>(workouts, pageable, 6));

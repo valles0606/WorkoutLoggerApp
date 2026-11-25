@@ -18,5 +18,5 @@ public interface ExerciseRepository extends JpaRepository<Exercise, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Exercise> findWithLockByWorkoutIdAndId(UUID workoutId, UUID exerciseId);
     void deleteByWorkoutIdAndId(UUID workoutId, UUID exerciseId);
-    Page<Exercise> findByWorkoutIdOrderByCreatedAtDesc(UUID workoutId, Pageable pageable);
+    Page<Exercise> findByWorkoutIdOrderByCreatedAtAsc(UUID workoutId, Pageable pageable);
 }

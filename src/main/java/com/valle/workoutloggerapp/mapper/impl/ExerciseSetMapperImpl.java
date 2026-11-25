@@ -18,7 +18,6 @@ public class ExerciseSetMapperImpl implements ExerciseSetMapper {
     public ExerciseSetDto toDto(ExerciseSet exerciseSet) {
         return new ExerciseSetDto(
                 exerciseSet.getId(),
-                exerciseSet.getSetNumber(),
                 exerciseSet.getWeight(),
                 exerciseSet.getReps(),
                 exerciseSet.getRpe()

@@ -99,17 +99,17 @@ public class ExerciseServiceTests {
 
         List<Exercise> exercises = List.of(exercise1, exercise2, exercise3);
         PageRequest pageable = PageRequest.of(1, 3,
-                Sort.by("createdAt").descending().and(Sort.by("id").descending()));
+                Sort.by("createdAt").descending().and(Sort.by("id").ascending()));
 
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
-        when(exerciseRepository.findByWorkoutIdOrderByCreatedAtDesc(workoutId, pageable))
+        when(exerciseRepository.findByWorkoutIdOrderByCreatedAtAsc(workoutId, pageable))
                 .thenReturn(new PageImpl<>(exercises, pageable, 6));
 
         List<Exercise> result = exerciseService.listExercises(workoutId, 1, 3);
 
         assertEquals(exercises, result);
         verify(workoutRepository).findById(workoutId);
-        verify(exerciseRepository).findByWorkoutIdOrderByCreatedAtDesc(workoutId, pageable);
+        verify(exerciseRepository).findByWorkoutIdOrderByCreatedAtAsc(workoutId, pageable);
     }
 
     @Test
@@ -130,16 +130,16 @@ public class ExerciseServiceTests {
         UUID workoutId = UUID.randomUUID();
         Workout workout = Workout.builder().id(workoutId).build();
         PageRequest pageable = PageRequest.of(0, 10,
-                Sort.by("createdAt").descending().and(Sort.by("id").descending()));
+                Sort.by("createdAt").descending().and(Sort.by("id").ascending()));
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
-        when(exerciseRepository.findByWorkoutIdOrderByCreatedAtDesc(workoutId, pageable))
+        when(exerciseRepository.findByWorkoutIdOrderByCreatedAtAsc(workoutId, pageable))
                 .thenReturn(Page.empty(pageable));
 
         List<Exercise> result = exerciseService.listExercises(workoutId, 0, 10);
 
         assertTrue(result.isEmpty());
         verify(workoutRepository).findById(workoutId);
-        verify(exerciseRepository).findByWorkoutIdOrderByCreatedAtDesc(workoutId, pageable);
+        verify(exerciseRepository).findByWorkoutIdOrderByCreatedAtAsc(workoutId, pageable);
     }
 
     @Test

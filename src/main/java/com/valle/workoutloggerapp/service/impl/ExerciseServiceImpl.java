@@ -49,8 +49,8 @@ public class ExerciseServiceImpl implements ExerciseService {
                 .orElseThrow(() -> new WorkoutNotFoundException(workoutId));
 
         Pageable pageable = PageRequest.of(
-                page, size, Sort.by("createdAt").descending().and(Sort.by("id").descending()));
-        Page<Exercise> exercises = exerciseRepository.findByWorkoutIdOrderByCreatedAtDesc(workoutId, pageable);
+                page, size, Sort.by("createdAt").descending().and(Sort.by("id").ascending()));
+        Page<Exercise> exercises = exerciseRepository.findByWorkoutIdOrderByCreatedAtAsc(workoutId, pageable);
 
         return exercises.getContent();
     }

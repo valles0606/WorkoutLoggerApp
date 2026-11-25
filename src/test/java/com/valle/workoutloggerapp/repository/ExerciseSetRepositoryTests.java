@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -49,66 +50,23 @@ public class ExerciseSetRepositoryTests {
     @Autowired
     private PlatformTransactionManager transactionManager;
 
-    /**
-     * Checks that the next set number starts at 1, is not reserved by a read, and increases after saving.
-     * Test documentation written using AI.
-     */
     @Test
-    public void exerciseSetRepository_findTopByExercideID_returnsTopExerciseSet() {
-        Workout workout = Workout.builder()
-                .title("test")
-                .workoutDate(LocalDate.of(2026, 10, 6))
-                .workoutSummary("test passes if saved")
-                .build();
+    public void exerciseSetRepository_save_GeneratesCreationTimestamp() {
+        Exercise exercise = saveExercise();
+        ExerciseSet saved = exerciseSetRepository.saveAndFlush(new ExerciseSet(67, 6, 7, exercise));
+        entityManager.clear();
 
-        workoutRepository.save(workout);
-
-        Exercise exercise = Exercise.builder()
-                .exerciseName(LAT_PULLDOWN)
-                .workout(workout)
-                .build();
-
-        exerciseRepository.save(exercise);
-
-        int setNum = exerciseSetRepository
-                .findTopByExercise_IdOrderBySetNumberDesc(exercise.getId())
-                .map(existingSet -> existingSet.getSetNumber() + 1)
-                .orElse(1);
-
-        int setNum2 = exerciseSetRepository
-                .findTopByExercise_IdOrderBySetNumberDesc(exercise.getId())
-                .map(existingSet -> existingSet.getSetNumber() + 1)
-                .orElse(1);
-
-        assertEquals(1, setNum);
-        assertEquals(1, setNum2, "Reading the next number does not reserve it");
-
-        ExerciseSet exerciseSet = ExerciseSet.builder()
-                .setNumber(setNum)
-                .weight(67)
-                .reps(6)
-                .rpe(7)
-                .exercise(exercise)
-                .build();
-
-        setNum = exerciseSetRepository.saveAndFlush(exerciseSet).getSetNumber();
-        assertEquals(1, setNum);
-
-        setNum = exerciseSetRepository
-                .findTopByExercise_IdOrderBySetNumberDesc(exercise.getId())
-                .map(existingSet -> existingSet.getSetNumber() + 1)
-                .orElse(1);
-
-        assertEquals(2, setNum);
+        ExerciseSet reloaded = exerciseSetRepository.findById(saved.getId()).orElseThrow();
+        assertNotNull(reloaded.getCreatedAt());
     }
 
     /**
-     * Checks that concurrent set creation waits for the exercise lock and saves distinct set numbers.
+     * Checks that concurrent set creation saves distinct sets with creation timestamps.
      * Test written using AI; documentation updated using AI.
      */
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void createExerciseSet_concurrentTransactions_waitForLockAndUseDifferentSetNumbers() throws Exception {
+    public void createExerciseSet_concurrentTransactions_PersistDistinctSets() throws Exception {
         TransactionTemplate transaction = new TransactionTemplate(transactionManager);
 
         // Commit setup before starting workers: they use their own transactions.
@@ -139,16 +97,16 @@ public class ExerciseSetRepositoryTests {
                 firstSetCreated.countDown();
                 // The service joins this transaction, so its lock remains held here.
                 awaitLatch(allowFirstCommit);
-                return set.getSetNumber();
+                return set.getId();
             }));
             awaitLatch(firstSetCreated);
 
             var second = workers.submit(() -> transaction.execute(status -> {
                 secondTransactionStarted.countDown();
                 ExerciseSet set = exerciseSetService.createExerciseSet(workoutId, exerciseId, request);
-                // Signal before commit so a duplicate-number insert cannot hide a missing lock.
+                // Signal when the service has saved the second set.
                 secondSetCreated.countDown();
-                return set.getSetNumber();
+                return set.getId();
             }));
             awaitLatch(secondTransactionStarted);
 
@@ -156,15 +114,16 @@ public class ExerciseSetRepositoryTests {
                     "The second request must wait while the first transaction holds the exercise lock");
 
             allowFirstCommit.countDown();
-            assertEquals(1, first.get(10, TimeUnit.SECONDS).intValue());
-            assertEquals(2, second.get(10, TimeUnit.SECONDS).intValue());
+            UUID firstId = first.get(10, TimeUnit.SECONDS);
+            UUID secondId = second.get(10, TimeUnit.SECONDS);
+            assertNotEquals(firstId, secondId);
 
-            List<Integer> savedNumbers = transaction.execute(status -> exerciseSetRepository
-                    .findByExercise_Workout_IdAndExercise_IdOrderBySetNumberAsc(workoutId, exerciseId)
-                    .stream()
-                    .map(ExerciseSet::getSetNumber)
-                    .toList());
-            assertEquals(List.of(1, 2), savedNumbers);
+            List<ExerciseSet> savedSets = transaction.execute(status -> exerciseSetRepository
+                    .findByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc(workoutId, exerciseId));
+            assertNotNull(savedSets);
+            assertEquals(2, savedSets.size());
+            assertTrue(savedSets.stream().allMatch(set -> set.getCreatedAt() != null));
+            assertTrue(savedSets.stream().map(ExerciseSet::getId).toList().containsAll(List.of(firstId, secondId)));
         } finally {
             allowFirstCommit.countDown();
             workers.shutdownNow();
@@ -184,11 +143,11 @@ public class ExerciseSetRepositoryTests {
     }
 
     /**
-     * Checks that the requested exercise sets are returned in ascending set-number order.
+     * Checks that the requested exercise sets are returned in ascending creation-time order with ID breaking ties.
      * Test assertions and documentation updated using AI.
      */
     @Test
-    public void exerciseSetRepositoryfindByExercise_Workout_IdAndExercise_IdOrderBySetNumberAsc_returnsList_() {
+    public void exerciseSetRepositoryfindByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc_returnsList_() {
         Workout workout = Workout.builder()
                 .title("Back workout")
                 .workoutDate(LocalDate.of(2026, 10, 6))
@@ -203,7 +162,6 @@ public class ExerciseSetRepositoryTests {
         exerciseRepository.save(exercise);
 
         ExerciseSet set1 = ExerciseSet.builder()
-                .setNumber(1)
                 .weight(40)
                 .reps(12)
                 .rpe(6)
@@ -211,7 +169,6 @@ public class ExerciseSetRepositoryTests {
                 .build();
 
         ExerciseSet set2 = ExerciseSet.builder()
-                .setNumber(2)
                 .weight(50)
                 .reps(10)
                 .rpe(7)
@@ -219,7 +176,6 @@ public class ExerciseSetRepositoryTests {
                 .build();
 
         ExerciseSet set3 = ExerciseSet.builder()
-                .setNumber(3)
                 .weight(60)
                 .reps(8)
                 .rpe(8)
@@ -227,7 +183,6 @@ public class ExerciseSetRepositoryTests {
                 .build();
 
         ExerciseSet set4 = ExerciseSet.builder()
-                .setNumber(4)
                 .weight(65)
                 .reps(6)
                 .rpe(9)
@@ -236,11 +191,23 @@ public class ExerciseSetRepositoryTests {
 
         exerciseSetRepository.saveAllAndFlush(List.of(set1, set2, set3, set4));
 
-        List<ExerciseSet> exerciseSets = exerciseSetRepository
-                .findByExercise_Workout_IdAndExercise_IdOrderBySetNumberAsc(workout.getId(), exercise.getId());
+        Instant earlier = Instant.parse("2026-11-25T10:00:00Z");
+        Instant later = earlier.plusSeconds(60);
+        setCreationTime(set1, later);
+        setCreationTime(set2, earlier);
+        setCreationTime(set3, earlier);
+        setCreationTime(set4, later.plusSeconds(60));
+        entityManager.clear();
 
-        assertEquals(List.of(1, 2, 3, 4),
-                exerciseSets.stream().map(ExerciseSet::getSetNumber).toList());
+        List<ExerciseSet> exerciseSets = exerciseSetRepository
+                .findByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc(workout.getId(), exercise.getId());
+
+        List<UUID> tiedIds = java.util.stream.Stream.of(set2.getId(), set3.getId())
+                .sorted(java.util.Comparator.comparing(UUID::toString)).toList();
+        List<UUID> expectedIds = List.of(tiedIds.get(0), tiedIds.get(1), set1.getId(), set4.getId());
+        assertEquals(expectedIds, exerciseSets.stream().map(ExerciseSet::getId).toList());
+        Exercise reloadedExercise = exerciseRepository.findById(exercise.getId()).orElseThrow();
+        assertEquals(expectedIds, reloadedExercise.getExerciseSets().stream().map(ExerciseSet::getId).toList());
         assertTrue(exerciseSets.stream().allMatch(set ->
                 set.getExercise().getId().equals(exercise.getId())));
     }
@@ -265,7 +232,6 @@ public class ExerciseSetRepositoryTests {
         UUID savedExerciseID = exerciseRepository.save(exercise).getId();
 
         ExerciseSet set1 = ExerciseSet.builder()
-                .setNumber(1)
                 .weight(40)
                 .reps(12)
                 .rpe(6)
@@ -281,7 +247,7 @@ public class ExerciseSetRepositoryTests {
         ExerciseSet found = exerciseSet.orElseThrow();
         assertEquals(savedExerciseSetId, found.getId());
         assertEquals(savedExerciseID, found.getExercise().getId());
-        assertEquals(1, found.getSetNumber());
+        assertNotNull(found.getCreatedAt());
         assertEquals(40, found.getWeight());
         assertEquals(12, found.getReps());
         assertEquals(6, found.getRpe());
@@ -307,7 +273,6 @@ public class ExerciseSetRepositoryTests {
         UUID savedExerciseID = exerciseRepository.save(exercise).getId();
 
         ExerciseSet set1 = ExerciseSet.builder()
-                .setNumber(1)
                 .weight(40)
                 .reps(12)
                 .rpe(6)
@@ -346,13 +311,13 @@ public class ExerciseSetRepositoryTests {
     public void exerciseSetRepository_save_PersistsSetAndExercise() {
         Exercise exercise = saveExercise();
         ExerciseSet saved = exerciseSetRepository.saveAndFlush(
-                new ExerciseSet(1, 40, 12, 6, exercise));
+                new ExerciseSet(40, 12, 6, exercise));
         entityManager.clear();
 
         ExerciseSet reloaded = exerciseSetRepository.findById(saved.getId()).orElseThrow();
 
         assertNotNull(reloaded.getId());
-        assertEquals(1, reloaded.getSetNumber());
+        assertNotNull(reloaded.getCreatedAt());
         assertEquals(40, reloaded.getWeight());
         assertEquals(12, reloaded.getReps());
         assertEquals(6, reloaded.getRpe());
@@ -360,7 +325,7 @@ public class ExerciseSetRepositoryTests {
     }
 
     /**
-     * Checks that updated weight, reps, and RPE persist while the set number and exercise remain unchanged.
+     * Checks that updated weight, reps, and RPE persist while the creation timestamp and exercise remain unchanged.
      * Test written using AI.
      */
     @Test
@@ -368,12 +333,13 @@ public class ExerciseSetRepositoryTests {
         Exercise exercise = saveExercise();
         UUID workoutId = exercise.getWorkout().getId();
         ExerciseSet saved = exerciseSetRepository.saveAndFlush(
-                new ExerciseSet(1, 40, 12, 6, exercise));
+                new ExerciseSet(40, 12, 6, exercise));
         entityManager.clear();
 
         ExerciseSet updated = exerciseSetRepository
                 .findByExercise_Workout_IdAndExercise_IdAndId(
                         workoutId, exercise.getId(), saved.getId()).orElseThrow();
+        Instant originalCreatedAt = updated.getCreatedAt();
         updated.setWeight(50);
         updated.setReps(10);
         updated.setRpe(8);
@@ -385,32 +351,35 @@ public class ExerciseSetRepositoryTests {
         assertEquals(50, reloaded.getWeight());
         assertEquals(10, reloaded.getReps());
         assertEquals(8, reloaded.getRpe());
-        assertEquals(1, reloaded.getSetNumber());
+        assertEquals(originalCreatedAt, reloaded.getCreatedAt());
         assertEquals(exercise.getId(), reloaded.getExercise().getId());
         assertEquals(1, exerciseSetRepository.count());
     }
 
-    /**
-     * Checks that an empty exercise has no top set and that the highest set number is scoped to its exercise.
-     * Test written using AI.
-     */
     @Test
-    public void exerciseSetRepository_findTop_ReturnsHighestNumberForRequestedExercise() {
+    public void exerciseSetRepository_list_ScopesResultsToWorkoutAndExercise() {
         Exercise exercise = saveExercise();
         Exercise otherExercise = saveExercise();
+        UUID workoutId = exercise.getWorkout().getId();
         assertTrue(exerciseSetRepository
-                .findTopByExercise_IdOrderBySetNumberDesc(exercise.getId()).isEmpty());
-        exerciseSetRepository.saveAllAndFlush(List.of(
-                new ExerciseSet(3, 60, 8, 8, exercise),
-                new ExerciseSet(1, 40, 12, 6, exercise),
-                new ExerciseSet(2, 50, 10, 7, exercise),
-                new ExerciseSet(9, 70, 6, 9, otherExercise)));
+                .findByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc(workoutId, exercise.getId())
+                .isEmpty());
+        ExerciseSet saved = exerciseSetRepository.saveAndFlush(new ExerciseSet(40, 12, 6, exercise));
+        exerciseSetRepository.saveAndFlush(new ExerciseSet(70, 6, 9, otherExercise));
         entityManager.clear();
 
-        ExerciseSet top = exerciseSetRepository
-                .findTopByExercise_IdOrderBySetNumberDesc(exercise.getId()).orElseThrow();
+        List<ExerciseSet> sets = exerciseSetRepository
+                .findByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc(workoutId, exercise.getId());
+        assertEquals(List.of(saved.getId()), sets.stream().map(ExerciseSet::getId).toList());
+        assertTrue(exerciseSetRepository
+                .findByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc(UUID.randomUUID(), exercise.getId())
+                .isEmpty());
+    }
 
-        assertEquals(3, top.getSetNumber());
-        assertEquals(exercise.getId(), top.getExercise().getId());
+    private void setCreationTime(ExerciseSet set, Instant createdAt) {
+        entityManager.createQuery("update ExerciseSet s set s.createdAt = :createdAt where s.id = :id")
+                .setParameter("createdAt", createdAt)
+                .setParameter("id", set.getId())
+                .executeUpdate();
     }
 }

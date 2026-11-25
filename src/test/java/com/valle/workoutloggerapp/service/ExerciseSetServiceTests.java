@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,19 +36,17 @@ public class ExerciseSetServiceTests {
     private ExerciseSetServiceImpl exerciseSetService;
 
     @Test
-    public void ExerciseSetService_createExerciseSet_returnsFirstSet() {
+    public void ExerciseSetService_createExerciseSet_returnsCreatedSet() {
         UUID workoutId = UUID.randomUUID();
         UUID exerciseId = UUID.randomUUID();
         Exercise exercise = Exercise.builder().id(exerciseId).build();
         CreateExerciseSetRequest request = new CreateExerciseSetRequest(100, 8, 7);
         ExerciseSet repositoryResult = ExerciseSet.builder()
-                .id(UUID.randomUUID()).setNumber(1)
+                .id(UUID.randomUUID()).createdAt(Instant.parse("2026-11-25T12:00:00Z"))
                 .weight(request.weight()).reps(request.reps()).rpe(request.rpe())
                 .exercise(exercise).build();
         when(exerciseRepository.findWithLockByWorkoutIdAndId(workoutId, exerciseId))
                 .thenReturn(Optional.of(exercise));
-        when(exerciseSetRepository.findTopByExercise_IdOrderBySetNumberDesc(exerciseId))
-                .thenReturn(Optional.empty());
         when(exerciseSetRepository.save(any(ExerciseSet.class))).thenReturn(repositoryResult);
 
         ExerciseSet result = exerciseSetService.createExerciseSet(workoutId, exerciseId, request);
@@ -55,40 +54,11 @@ public class ExerciseSetServiceTests {
         ArgumentCaptor<ExerciseSet> captor = ArgumentCaptor.forClass(ExerciseSet.class);
         verify(exerciseSetRepository).save(captor.capture());
         ExerciseSet submittedSet = captor.getValue();
-        assertEquals(1, submittedSet.getSetNumber());
+        assertNull(submittedSet.getCreatedAt(), "Hibernate assigns the timestamp when persisting");
         assertEquals(request.weight(), submittedSet.getWeight());
         assertEquals(request.reps(), submittedSet.getReps());
         assertEquals(request.rpe(), submittedSet.getRpe());
         assertSame(exercise, submittedSet.getExercise());
-        assertSame(repositoryResult, result);
-    }
-
-    @Test
-    public void ExerciseSetService_createExerciseSet_returnsNextNumberedSet() {
-        UUID workoutId = UUID.randomUUID();
-        UUID exerciseId = UUID.randomUUID();
-        Exercise exercise = Exercise.builder().id(exerciseId).build();
-        CreateExerciseSetRequest request = new CreateExerciseSetRequest(120, 6, 8);
-        ExerciseSet latestSet = ExerciseSet.builder().setNumber(4).exercise(exercise).build();
-        ExerciseSet repositoryResult = ExerciseSet.builder()
-                .id(UUID.randomUUID()).setNumber(5)
-                .weight(request.weight()).reps(request.reps()).rpe(request.rpe())
-                .exercise(exercise).build();
-        when(exerciseRepository.findWithLockByWorkoutIdAndId(workoutId, exerciseId))
-                .thenReturn(Optional.of(exercise));
-        when(exerciseSetRepository.findTopByExercise_IdOrderBySetNumberDesc(exerciseId))
-                .thenReturn(Optional.of(latestSet));
-        when(exerciseSetRepository.save(any(ExerciseSet.class))).thenReturn(repositoryResult);
-
-        ExerciseSet result = exerciseSetService.createExerciseSet(workoutId, exerciseId, request);
-
-        ArgumentCaptor<ExerciseSet> captor = ArgumentCaptor.forClass(ExerciseSet.class);
-        verify(exerciseSetRepository).save(captor.capture());
-        assertEquals(5, captor.getValue().getSetNumber());
-        assertEquals(request.weight(), captor.getValue().getWeight());
-        assertEquals(request.reps(), captor.getValue().getReps());
-        assertEquals(request.rpe(), captor.getValue().getRpe());
-        assertSame(exercise, captor.getValue().getExercise());
         assertSame(repositoryResult, result);
     }
 
@@ -113,32 +83,32 @@ public class ExerciseSetServiceTests {
         UUID exerciseId = UUID.randomUUID();
         Exercise exercise = Exercise.builder().id(exerciseId).build();
         ExerciseSet first = ExerciseSet.builder().id(UUID.randomUUID())
-                .setNumber(1).exercise(exercise).build();
+                .createdAt(Instant.parse("2026-11-25T12:00:00Z")).exercise(exercise).build();
         ExerciseSet second = ExerciseSet.builder().id(UUID.randomUUID())
-                .setNumber(2).exercise(exercise).build();
+                .createdAt(Instant.parse("2026-11-25T12:00:00Z")).exercise(exercise).build();
         List<ExerciseSet> sets = List.of(first, second);
-        when(exerciseSetRepository.findByExercise_Workout_IdAndExercise_IdOrderBySetNumberAsc(workoutId, exerciseId))
+        when(exerciseSetRepository.findByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc(workoutId, exerciseId))
                 .thenReturn(sets);
 
         List<ExerciseSet> result = exerciseSetService.listExerciseSets(workoutId, exerciseId);
 
         assertEquals(sets, result);
         verify(exerciseSetRepository)
-                .findByExercise_Workout_IdAndExercise_IdOrderBySetNumberAsc(workoutId, exerciseId);
+                .findByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc(workoutId, exerciseId);
     }
 
     @Test
     public void ExerciseSetService_listExerciseSets_returnsEmptyList() {
         UUID workoutId = UUID.randomUUID();
         UUID exerciseId = UUID.randomUUID();
-        when(exerciseSetRepository.findByExercise_Workout_IdAndExercise_IdOrderBySetNumberAsc(workoutId, exerciseId))
+        when(exerciseSetRepository.findByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc(workoutId, exerciseId))
                 .thenReturn(List.of());
 
         List<ExerciseSet> result = exerciseSetService.listExerciseSets(workoutId, exerciseId);
 
         assertTrue(result.isEmpty());
         verify(exerciseSetRepository)
-                .findByExercise_Workout_IdAndExercise_IdOrderBySetNumberAsc(workoutId, exerciseId);
+                .findByExercise_Workout_IdAndExercise_IdOrderByCreatedAtAscIdAsc(workoutId, exerciseId);
     }
 
     @Test
@@ -146,7 +116,7 @@ public class ExerciseSetServiceTests {
         UUID workoutId = UUID.randomUUID();
         UUID exerciseId = UUID.randomUUID();
         UUID setId = UUID.randomUUID();
-        ExerciseSet set = ExerciseSet.builder().id(setId).setNumber(1).build();
+        ExerciseSet set = ExerciseSet.builder().id(setId).createdAt(Instant.parse("2026-11-25T12:00:00Z")).build();
         when(exerciseSetRepository.findByExercise_Workout_IdAndExercise_IdAndId(workoutId, exerciseId, setId))
                 .thenReturn(Optional.of(set));
 
@@ -177,10 +147,10 @@ public class ExerciseSetServiceTests {
         UUID exerciseId = UUID.randomUUID();
         UUID setId = UUID.randomUUID();
         Exercise exercise = Exercise.builder().id(exerciseId).build();
-        ExerciseSet existingSet = ExerciseSet.builder().id(setId).setNumber(3)
+        ExerciseSet existingSet = ExerciseSet.builder().id(setId).createdAt(Instant.parse("2026-11-25T12:00:00Z"))
                 .weight(100).reps(8).rpe(7).exercise(exercise).build();
         UpdateExerciseSetRequest request = new UpdateExerciseSetRequest(110, 6, 9);
-        ExerciseSet repositoryResult = ExerciseSet.builder().id(setId).setNumber(3)
+        ExerciseSet repositoryResult = ExerciseSet.builder().id(setId).createdAt(Instant.parse("2026-11-25T12:00:00Z"))
                 .weight(request.weight()).reps(request.reps()).rpe(request.rpe())
                 .exercise(exercise).build();
         when(exerciseSetRepository.findByExercise_Workout_IdAndExercise_IdAndId(workoutId, exerciseId, setId))
@@ -197,7 +167,7 @@ public class ExerciseSetServiceTests {
         assertEquals(request.reps(), submittedSet.getReps());
         assertEquals(request.rpe(), submittedSet.getRpe());
         assertEquals(setId, submittedSet.getId());
-        assertEquals(3, submittedSet.getSetNumber());
+        assertEquals(Instant.parse("2026-11-25T12:00:00Z"), submittedSet.getCreatedAt());
         assertSame(exercise, submittedSet.getExercise());
         assertSame(repositoryResult, result);
     }

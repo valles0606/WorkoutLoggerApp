@@ -43,7 +43,7 @@ erDiagram
 
     EXERCISE_SET {
         UUID id PK
-        Integer set_number
+        Instant createdAt
         Integer weight
         Integer reps
         Integer rpe
@@ -53,7 +53,7 @@ erDiagram
 
 Each workout can contain zero or more exercises, and each exercise belongs to exactly one workout. Each exercise can contain zero or more sets, and each set belongs to exactly one exercise. `ExerciseName` is stored as an enum value rather than a separate entity.
 
-Deleting a workout cascades to its exercises and their sets. Deleting an exercise cascades to its sets. Both parent collections use orphan removal. The combination of `exercise_id` and `set_number` is unique, so set numbers cannot repeat within the same exercise.
+Deleting a workout cascades to its exercises and their sets. Deleting an exercise cascades to its sets. Both parent collections use orphan removal. Sets record their creation timestamp and are ordered oldest first, with their ID breaking timestamp ties.
 
 # API Endpoints 📲 #
 
@@ -87,8 +87,8 @@ All endpoints below access sets within the specified workout and exercise.
 
 | Method | Endpoint | Description | Status |
 |---|---|---|---|
-| `POST` | `/api/v1/workouts/{workoutId}/exercises/{exerciseId}/sets` | Add a set with an automatically assigned set number | 200 OK |
-| `GET` | `/api/v1/workouts/{workoutId}/exercises/{exerciseId}/sets` | List sets in ascending set-number order | 200 OK |
+| `POST` | `/api/v1/workouts/{workoutId}/exercises/{exerciseId}/sets` | Add a set with an automatically recorded creation timestamp | 200 OK |
+| `GET` | `/api/v1/workouts/{workoutId}/exercises/{exerciseId}/sets` | List sets in creation order | 200 OK |
 | `GET` | `/api/v1/workouts/{workoutId}/exercises/{exerciseId}/sets/{exerciseSetId}` | Get a set | 200 OK |
 | `PUT` | `/api/v1/workouts/{workoutId}/exercises/{exerciseId}/sets/{exerciseSetId}` | Update a set | 200 OK |
 | `DELETE` | `/api/v1/workouts/{workoutId}/exercises/{exerciseId}/sets/{exerciseSetId}` | Delete a set | 204 No Content |

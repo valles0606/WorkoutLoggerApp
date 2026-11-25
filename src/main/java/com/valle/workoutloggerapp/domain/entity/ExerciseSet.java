@@ -4,17 +4,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "exercise_sets",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_exercise_sets_exercise_set_number",
-                columnNames = {"exercise_id", "set_number"}
-        )
-)
+@Table(name = "exercise_sets")
 @Builder
 @Getter
 @Setter
@@ -22,8 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ExerciseSet {
 
-    public ExerciseSet(Integer setNumber, Integer weight, Integer reps, Integer rpe, Exercise exercise) {
-        this.setNumber = setNumber;
+    public ExerciseSet(Integer weight, Integer reps, Integer rpe, Exercise exercise) {
         this.weight = weight;
         this.reps = reps;
         this.rpe = rpe;
@@ -34,9 +29,9 @@ public class ExerciseSet {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "set_number", nullable = false)
-    @Min(1)
-    private Integer setNumber;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
 
     @Column(nullable = false)
     @Min(0)

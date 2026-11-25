@@ -32,7 +32,7 @@ public class Exercise {
     //cascadeType.all makes it so deleting an exercise will also delete all sets with it!
     //Orphan removal makes it so removing a set from our kist wil also delete it from our database, not just unlink it
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("setNumber ASC")
+    @OrderBy("createdAt ASC, id ASC")
     @Builder.Default
     private List<ExerciseSet> exerciseSets = new ArrayList<>();
 
