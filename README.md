@@ -131,6 +131,6 @@ Out-of-range values return `400 Bad Request` using the standard error response. 
 Nonnumeric values such as `size=abc` also return `400 Bad Request`.
 
 # Roadmap + Future Plans 💭 #
-- Add automated service, controller, and repository layer tests.
-- Build a web or mobile frontend.
-- Add workout history and progress summaries.
+- Begin a IOS application which uses this REST API.
+- Build a desktop app.
+- Implement a sign up process for real users. 
